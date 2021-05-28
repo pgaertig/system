@@ -1,0 +1,87 @@
+# https://starship.rs/config/
+
+# JetBrains Mono optimized
+#  ̂❯
+
+scan_timeout = 1000 #Ruby is slow sometimes, 30ms default is not enough
+command_timeout = 2000
+add_newline = false
+
+[cmd_duration]
+show_notifications = true
+format="·[$duration]($style)"
+style="dimmed #ffd700"
+
+[line_break]
+disabled = true
+
+[directory]
+truncation_length = 8
+truncation_symbol = "…/"
+style="bold bg:#404040 fg:white"
+format = '[$read_only]($read_only_style)[${path}]($style)[](bg:#000000 fg:#404040)'
+read_only_style="bold red bg:#404040"
+read_only=""
+
+[character]
+success_symbol = " [̂̂❯](bold #808080)"
+error_symbol = " [̂❯](red)"
+
+[status]
+disabled = true
+symbol="🗲"
+format="·[$status$symbol]($style)"
+style="bright-red"
+recognize_signal_code=true
+map_symbol=true
+
+[git_branch]
+format = "[$symbol](fg:#ff5f00 bold)[$branch]($style)"
+symbol = " "
+style="fg:#d75f5f"
+
+[git_status]
+format='([$all_status$ahead_behind]($style))'
+style="bold fg:#ff5f00"
+
+[golang]
+format = '·[$symbol($version)]($style)'
+symbol = '🐹'
+style = 'cyan'
+disabled = false
+
+[nodejs]
+format = "·[$symbol($version)]($style)"
+version_format="${major}"
+symbol = "⬢ "
+style="dimmed #5faf00"
+
+[ruby]
+version_format ="${raw}"
+symbol = "💎"
+format = "·[$symbol($version)]($style)"
+style="dimmed #af005f"
+
+[python]
+format='·[${symbol}${pyenv_prefix}(${version})(:$virtualenv)]($style)'
+style='blue'
+pyenv_prefix = 'pyenv'
+version_format = '${raw}'
+symbol='🐍'
+
+[package]
+format = '·[$symbol$version]($style)'
+symbol = '📦'
+style = '208'
+display_private = false
+disabled = false
+
+[rust]
+format = '·[$symbol($version)]($style)'
+version_format = 'v${raw}'
+symbol = '🦀'
+style = 'red'
+disabled = false
+detect_extensions = ['rs']
+detect_files = ['Cargo.toml']
+detect_folders = []

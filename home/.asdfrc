@@ -1,0 +1,2 @@
+# Allow to read .ruby-version and .node-version
+legacy_version_file = yes

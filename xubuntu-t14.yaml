@@ -1,0 +1,291 @@
+---
+
+#Xubuntu 21.04
+- name: xubuntu t14 local playbook
+  hosts: localhost
+  connection: local
+  become: no
+  vars:
+    executing_user: "{{ ansible_user_id }}"
+  tasks:
+
+    - name: install/update packages
+      become: yes
+      apt:
+        state: latest
+        update_cache: yes
+        name:
+          - libreoffice
+          - git
+          #      - xnbd-client
+          - xfce4-goodies
+          - apt-file
+          - ttf-mscorefonts-installer
+          - redshift-gtk
+          - exiftool
+          - curl
+          #      - docker.io
+          - xattr
+          # https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1626731
+          #      - uvcdynctrl
+          - unzip
+          - tlp
+          - smartmontools
+          - papirus-icon-theme
+          #      - mono-complete
+          - arc-theme
+          - inotify-tools
+          - libunrar5
+          - hashdeep
+          - sqlitebrowser
+          - inkscape
+          - remmina
+          - neofetch
+
+    - name: Install snap apps
+      become: true
+      snap:
+        name:
+          - chromium
+          - darktable
+          - restic
+          - signal-desktop
+          - spotify
+          - skype
+          - telegram-desktop
+          - xournalpp
+          #        - zoom-client
+          - drawio
+        channel: latest/edge
+      tags: apps
+
+    - name: optimize network usage
+      become: true
+      blockinfile:
+        path: /etc/systemd/network/01-tso-and-gso.link
+        create: yes
+        block: |
+          [Match]
+          # Set a match condition appropriate for your use case
+          Name=*
+
+          [Link]
+          TCPSegmentationOffload=false
+          GenericSegmentationOffload=false
+      tags: net
+
+        #  - name: Prevent Lenovo USB Dock Gen 2 Ethernet driver r8152 issues on USB suspend
+        #    become: true
+        #    copy:
+        #      dest: /etc/udev/rules.d/10-lenovo-dock-quirks.rules
+        #      content: |
+        #        # Prevent
+        #        ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="17ef", ATTR{idProduct}=="a387", TEST=="power/control", ATTR{power/control}="on"
+        #        ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="17ef", ATTR{idProduct}=="a387", TEST=="power/autosuspend", ATTR{power/autosuspend}="0"
+        #        ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="17ef", ATTR{idProduct}=="a387", TEST=="power/autosuspend_delay_ms", ATTR{power/autosuspend_delay_ms}="0"
+        #    tags: net
+
+        #  - name: setup nbd kernel module
+        #    modprobe:
+        #      name: nbd
+        #      params: 'nbds_max=1'
+
+        #  - name: create Xorg conf.d directory
+        #    file: path=/etc/X11/xorg.conf.d/ state=directory
+
+        #  - name: set tear free screen rendering - fixes scroll tear issue
+        #    blockinfile:
+        #      path: /etc/X11/xorg.conf.d/20-intel.conf
+        #      create: yes
+        #      block: |
+        #        Section "Device"
+        #          Identifier "card0"
+        #          Driver "intel"
+        #          Option "TearFree" "true"
+        #          Option "Backlight"  "intel_backlight"
+        #Option  "AccelMethod" "uxa"
+      #Option  "TripleBuffer" "true"
+    #          BusID       "PCI:0:2:0"
+    #        EndSection
+
+    #Docker
+    #  - name: Make docker group for unpriviledged users
+    #    tags: docker
+    #    group: name=docker
+
+    #  - name: install/update packages
+    #    tags: docker
+    #    apt: name={{item}} state=latest update_cache=yes
+    #    with_items:
+    #      - docker.io
+
+    #  - name: Adding user to docker group
+    #    tags: docker
+    #    user:
+    #      name: {{ executing_user }}
+    #      groups: docker
+    #      append: yes
+
+    #  - name: Run docker service
+    #    tags: docker
+    #    service: name="docker" state="started"
+
+    - name: Install kitty
+      shell: |
+        curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin launch=n
+        ln -s ~/.local/kitty.app/bin/kitty ~/.local/bin/
+        cp ~/.local/kitty.app/share/applications/kitty.desktop ~/.local/share/applications
+        sed -i "s|Icon=kitty|Icon=/home/$USER/.local/kitty.app/share/icons/hicolor/256x256/apps/kitty.png|g" ~/.local/share/applications/kitty.desktop
+      tags: term
+
+    - name: Configure kitty
+      copy:
+        src: "config/kitty/kitty.conf"
+        dest: "~/.config/kitty/kitty.conf"
+        backup: yes
+      tags: term
+
+    - name: Bash set terminal window title
+      blockinfile:
+        path: ~/.bashrc
+        block: |
+          trap 'echo -ne "\e]0;$BASH_COMMAND\007"' DEBUG
+      tags: term
+
+    - name: Raise inotify limits
+      become: true
+      sysctl:
+        name: fs.inotify.max_user_watches
+        value: 262144
+        state: present
+
+    - name: Enable Sixel mode in Terminals
+      become: true
+      copy:
+        dest: /etc/X11/Xresources/sixel
+        content: |
+          ! Allow sixel graphics. (Try: "convert -colors 16 foo.jpg sixel:-").
+          xterm*decTerminalID	:	vt340
+      tags: term
+
+    - name: Disable client side decorations in dialogs
+      shell: xfconf-query -c xsettings -p /Gtk/DialogsUseHeader -s false
+      tags: xfce
+
+    - name: Spotify DPI
+      replace:
+        path: ~/.local/share/applications/spotify_spotify.desktop
+        regexp: "spotify %U"
+        replace: "spotify --force-device-scale-factor=1.25 %U"
+      tags: apps
+
+    - name: Enable Strawberry repo
+      become: true
+      apt_repository: repo="ppa:jonaski/strawberry"
+      tags: apps, strawberry
+
+    - name: Install ASDF - meta env version manager, node and ruby
+      git:
+        clone: true
+        repo: 'https://github.com/asdf-vm/asdf.git'
+        dest: ~/.asdf
+      tags: shell
+
+    - name: Install Strawberry
+      become: true
+      apt: name="strawberry" state=latest update_cache=yes
+      tags: apps, strawberry
+
+    - name: KVM - sync clocks of guests on resume
+      # Check with:
+      # virsh qemu-agent-command ubuntu20.04 '{"execute":"guest-set-time"}'
+      lineinfile:
+        path: /etc/default/libvirt-guests
+        regexp: '^#SYNC_TIME=1$'
+        line: 'SYNC_TIME=1'
+      tags: kvm
+
+    - name: Install shell utilities - starship, direnv
+      become: true
+      snap:
+        name:
+          - starship
+          - direnv
+      tags: shell
+
+    - name: Install fish (Friendly Interactive SHell) and extra tools
+      become: true
+      apt:
+        name:
+          - fish
+          - fd-find
+          - bat  #https://github.com/sharkdp/bat
+      tags: shell
+
+    - name: Update fish completions
+      shell: fish -c fish_update_completions
+      tags: shell
+
+    - name: Fzf fo fish
+      git:
+        repo: "https://github.com/PatrickF1/fzf.fish"
+        dest: "~/localdev/fzf.fish"
+        update: no
+      tags: shell
+
+    - name: Configure fish
+      copy:
+        src: "config/fish/config.fish"
+        dest: "~/.config/fish/config.fish"
+        backup: yes
+      tags: shell
+
+    - name: Change user shell to fish
+      become: yes
+      user:
+        name: "{{ executing_user }}"
+        shell: /usr/bin/fish
+
+    - name: Configure starship prompt
+      copy:
+        src: "config/starship.toml"
+        dest: "~/.config/starship.toml"
+        backup: yes
+      tags: shell
+
+    - name: Configure fisher
+      shell:
+        cmd: 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher'
+        executable: /usr/bin/fish
+      tags: shell
+
+    - name: Configure Ruby env
+      shell:
+        cmd: 'asdf plugin-add ruby'
+        executable: /usr/bin/fish
+      register: asdf_ruby
+      changed_when: "'already added' not in asdf_ruby.stderr"
+      failed_when: "asdf_ruby.rc not in [0,2]"
+      tags: shell
+
+    - name: Configure Node env
+      shell:
+        cmd: 'asdf plugin-add nodejs'
+        executable: /usr/bin/fish
+      register: asdf_node
+      changed_when: "'already added' not in asdf_node.stderr"
+      failed_when: "asdf_node.rc not in [0,2]"
+      tags: shell
+
+    - name: Configure asdf rc file
+      copy:
+        src: "home/.asdfrc"
+        dest: "~/"
+      tags: shell
+
+    - name: Configure RedShift
+      copy:
+        src: "config/redshift.conf"
+        dest: "~/.config/redshift.conf"
+        backup: yes
+      tags: xfce
