@@ -17,22 +17,17 @@
         name:
           - libreoffice
           - git
-          #      - xnbd-client
           - xfce4-goodies
           - apt-file
           - ttf-mscorefonts-installer
           - redshift-gtk
           - exiftool
           - curl
-          #      - docker.io
           - xattr
-          # https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1626731
-          #      - uvcdynctrl
           - unzip
           - tlp
           - smartmontools
           - papirus-icon-theme
-          #      - mono-complete
           - arc-theme
           - inotify-tools
           - libunrar5
@@ -41,6 +36,19 @@
           - inkscape
           - remmina
           - neofetch
+          - openvpn
+          - network-manager-openvpn-gnome
+      tags: apps
+
+    - name: remove packages
+      become: yes
+      apt:
+        state: absent
+        name:
+          - mono-complete
+          - docker.io
+          - xnbd-client
+          - uvcdynctrl # https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1626731
 
     - name: Install snap apps
       become: true
@@ -54,9 +62,17 @@
           - skype
           - telegram-desktop
           - xournalpp
-          #        - zoom-client
           - drawio
+          - restic
         channel: latest/edge
+      tags: apps
+
+    - name: Remove snap apps
+      become: true
+      snap:
+        state: absent
+        name:
+          - zoom-client # problems with links, used vendor's DEB
       tags: apps
 
     - name: optimize network usage
@@ -181,7 +197,7 @@
 
     - name: Enable Strawberry repo
       become: true
-      apt_repository: repo="ppa:jonaski/strawberry"
+      apt_repository: repo="ppa:jonaski/strawberry-unstable"
       tags: apps, strawberry
 
     - name: Install ASDF - meta env version manager, node and ruby
