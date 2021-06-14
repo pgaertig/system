@@ -50,7 +50,7 @@
           - xnbd-client
           - uvcdynctrl # https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1626731
 
-    - name: Install snap apps
+    - name: Install edge snap apps
       become: true
       snap:
         name:
@@ -65,6 +65,15 @@
           - drawio
           - restic
         channel: latest/edge
+      tags: apps
+
+    - name: Install edge snap apps with classic confinement
+      become: true
+      snap:
+        name:
+          - slack
+        channel: latest/edge
+        classic: true
       tags: apps
 
     - name: Remove snap apps
