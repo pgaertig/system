@@ -38,6 +38,8 @@
           - neofetch
           - openvpn
           - network-manager-openvpn-gnome
+          - nbd-client
+          - birdtray
       tags: apps
 
     - name: remove packages
@@ -49,6 +51,10 @@
           - docker.io
           - xnbd-client
           - uvcdynctrl # https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1626731
+          - virtualbox
+          - virtualbox-dkms
+          - strawberry
+      tags: apps
 
     - name: Install edge snap apps
       become: true
@@ -204,22 +210,12 @@
         replace: "spotify --force-device-scale-factor=1.25 %U"
       tags: apps
 
-    - name: Enable Strawberry repo
-      become: true
-      apt_repository: repo="ppa:jonaski/strawberry-unstable"
-      tags: apps, strawberry
-
     - name: Install ASDF - meta env version manager, node and ruby
       git:
         clone: true
         repo: 'https://github.com/asdf-vm/asdf.git'
         dest: ~/.asdf
       tags: shell
-
-    - name: Install Strawberry
-      become: true
-      apt: name="strawberry" state=latest update_cache=yes
-      tags: apps, strawberry
 
     - name: KVM - sync clocks of guests on resume
       # Check with:
@@ -308,9 +304,23 @@
         dest: "~/"
       tags: shell
 
+    - name: Default tool versions for asdf
+      copy:
+        src: ".tool-versions"
+        dest: "~/"
+      tags: shell
+
     - name: Configure RedShift
       copy:
         src: "config/redshift.conf"
         dest: "~/.config/redshift.conf"
         backup: yes
       tags: xfce
+
+
+    - name: setup nbd kernel module
+      become: true
+      modprobe:
+        name: nbd
+        params: 'nbds_max=1'
+      tags: net
