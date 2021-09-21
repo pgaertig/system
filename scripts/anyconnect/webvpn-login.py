@@ -34,7 +34,6 @@ async def main():
     parser.add_argument('url', help='Anyconnect endpoint URL')
     parser.add_argument('cookie_file', help='File to store the VPN cookie')
     args = parser.parse_args()
-    password = keyring.get_password(the_script, args.user) or getpass.getpass('Anyconnect user password:')
 
     chromium_path = shutil.which('chromium')
     browser = await launch({
@@ -53,6 +52,7 @@ async def main():
         asyncio.create_task(page.waitForNavigation())])
 
     while True:
+        password = keyring.get_password(the_script, args.user) or getpass.getpass('Anyconnect user password:')
         await page.evaluate('''() => {document.querySelector('input[name="username"]').value="";}''')
         await page.evaluate('''() => {document.querySelector('input[name="password"]').value="";}''')
         await page.type(selector='input[name="username"]', text=args.user)
@@ -66,10 +66,11 @@ async def main():
             print(f"{errorInfo['type']} - {errorInfo['content']}")
             keyring.delete_password(the_script, args.user)
         else:
+            await page.waitForSelector('#oath')
+            # Once logged in remember the password
+            keyring.set_password(the_script, args.user, password)
             break
 
-    # Once logged in remember the password
-    keyring.set_password(the_script, args.user, password)
 
     while True:
         auth_code = input('Enter the received auth code: ')
