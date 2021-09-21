@@ -52,7 +52,8 @@ async def main():
         asyncio.create_task(page.waitForNavigation())])
 
     while True:
-        password = keyring.get_password(the_script, args.user) or getpass.getpass('Anyconnect user password:')
+        keyring_password = keyring.get_password(the_script, args.user)
+        password = keyring_password or getpass.getpass('Anyconnect user password:')
         await page.evaluate('''() => {document.querySelector('input[name="username"]').value="";}''')
         await page.evaluate('''() => {document.querySelector('input[name="password"]').value="";}''')
         await page.type(selector='input[name="username"]', text=args.user)
@@ -64,7 +65,8 @@ async def main():
         errorInfo = await getError(page)
         if errorInfo['type']:
             print(f"{errorInfo['type']} - {errorInfo['content']}")
-            keyring.delete_password(the_script, args.user)
+            if keyring_password:
+                keyring.delete_password(the_script, args.user)
         else:
             await page.waitForSelector('#oath')
             # Once logged in remember the password
