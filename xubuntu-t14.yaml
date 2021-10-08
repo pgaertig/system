@@ -9,87 +9,44 @@
     executing_user: "{{ ansible_user_id }}"
   tasks:
 
-    - name: install/update packages
+    - name: Update package lists
       become: yes
       apt:
-        state: latest
         update_cache: yes
-        name:
-          - libreoffice
-          - git
-          - xfce4-goodies
-          - apt-file
-          - ttf-mscorefonts-installer
-          - redshift-gtk
-          - exiftool
-          - curl
-          - xattr
-          - unzip
-          - tlp
-          - smartmontools
-          - papirus-icon-theme
-          - arc-theme
-          - inotify-tools
-          - libunrar5
-          - hashdeep
-          - sqlitebrowser
-          - inkscape
-          - remmina
-          - neofetch
-          - openvpn
-          - network-manager-openvpn-gnome
-          - nbd-client
-          - birdtray
-      tags: apps
 
-    - name: remove packages
-      become: yes
-      apt:
-        state: absent
-        name:
-          - mono-complete
-          - docker.io
-          - xnbd-client
-          - uvcdynctrl # https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1626731
-          - virtualbox
-          - virtualbox-dkms
-          - strawberry
-      tags: apps
+    # Common
+    - import_tasks: tasks/fish.yaml
+      tags: fish, shell
+    - import_tasks: tasks/starship.yaml
+      tags: shell
+    - import_tasks: tasks/cmdline-tools.yaml
+      tags: shell, apps
+    - import_tasks: tasks/bash.yaml
+      tags: shell
+    - import_tasks: tasks/asdf.yaml
+      tags: dev
 
-    - name: Install edge snap apps
-      become: true
-      snap:
-        name:
-          - chromium
-          - darktable
-          - restic
-          - signal-desktop
-          - spotify
-          - skype
-          - telegram-desktop
-          - xournalpp
-          - drawio
-          - restic
-        channel: latest/edge
+    # Desktop stuff
+    - import_tasks: tasks/desktop/apps.yaml
       tags: apps
+    - import_tasks: tasks/desktop/ddcutil.yaml
+      tags: hw, desktop, apps
+    - import_tasks: tasks/desktop/redshift.yaml
+      tags: xfce, desktop, apps
+    - import_tasks: tasks/desktop/xfce.yaml
+      tags: xfce
+    - import_tasks: tasks/desktop/joplin.yaml
+      tags: apps, joplin
+    - import_tasks: tasks/desktop/kitty.yaml
+      tags: term, kitty
+    - import_tasks: tasks/desktop/fonts.yaml
+      tags: xfce, desktop
 
-    - name: Install edge snap apps with classic confinement
-      become: true
-      snap:
-        name:
-          - slack
-        channel: latest/edge
-        classic: true
-      tags: apps
+    # Server stuff
+    - import_tasks: tasks/server/qemu.yaml
+      tags: qemu
 
-    - name: Remove snap apps
-      become: true
-      snap:
-        state: absent
-        name:
-          - zoom-client # problems with links, used vendor's DEB
-      tags: apps
-
+    # Other
     - name: optimize network usage
       become: true
       blockinfile:
@@ -104,17 +61,6 @@
           TCPSegmentationOffload=false
           GenericSegmentationOffload=false
       tags: net
-
-        #  - name: Prevent Lenovo USB Dock Gen 2 Ethernet driver r8152 issues on USB suspend
-        #    become: true
-        #    copy:
-        #      dest: /etc/udev/rules.d/10-lenovo-dock-quirks.rules
-        #      content: |
-        #        # Prevent
-        #        ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="17ef", ATTR{idProduct}=="a387", TEST=="power/control", ATTR{power/control}="on"
-        #        ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="17ef", ATTR{idProduct}=="a387", TEST=="power/autosuspend", ATTR{power/autosuspend}="0"
-        #        ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="17ef", ATTR{idProduct}=="a387", TEST=="power/autosuspend_delay_ms", ATTR{power/autosuspend_delay_ms}="0"
-        #    tags: net
 
         #  - name: setup nbd kernel module
         #    modprobe:
@@ -160,167 +106,3 @@
     #  - name: Run docker service
     #    tags: docker
     #    service: name="docker" state="started"
-
-    - name: Install kitty
-      shell: |
-        curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin launch=n
-        ln -s ~/.local/kitty.app/bin/kitty ~/.local/bin/
-        cp ~/.local/kitty.app/share/applications/kitty.desktop ~/.local/share/applications
-        sed -i "s|Icon=kitty|Icon=/home/$USER/.local/kitty.app/share/icons/hicolor/256x256/apps/kitty.png|g" ~/.local/share/applications/kitty.desktop
-      tags: term
-
-    - name: Configure kitty
-      copy:
-        src: "config/kitty/kitty.conf"
-        dest: "~/.config/kitty/kitty.conf"
-        backup: yes
-      tags: term
-
-    - name: Bash set terminal window title
-      blockinfile:
-        path: ~/.bashrc
-        block: |
-          trap 'echo -ne "\e]0;$BASH_COMMAND\007"' DEBUG
-      tags: term
-
-    - name: Raise inotify limits
-      become: true
-      sysctl:
-        name: fs.inotify.max_user_watches
-        value: 262144
-        state: present
-
-    - name: Enable Sixel mode in Terminals
-      become: true
-      copy:
-        dest: /etc/X11/Xresources/sixel
-        content: |
-          ! Allow sixel graphics. (Try: "convert -colors 16 foo.jpg sixel:-").
-          xterm*decTerminalID	:	vt340
-      tags: term
-
-    - name: Disable client side decorations in dialogs
-      shell: xfconf-query -c xsettings -p /Gtk/DialogsUseHeader -s false
-      tags: xfce
-
-    - name: Spotify DPI
-      replace:
-        path: ~/.local/share/applications/spotify_spotify.desktop
-        regexp: "spotify %U"
-        replace: "spotify --force-device-scale-factor=1.25 %U"
-      tags: apps
-
-    - name: Install ASDF - meta env version manager, node and ruby
-      git:
-        clone: true
-        repo: 'https://github.com/asdf-vm/asdf.git'
-        dest: ~/.asdf
-      tags: shell
-
-    - name: KVM - sync clocks of guests on resume
-      # Check with:
-      # virsh qemu-agent-command ubuntu20.04 '{"execute":"guest-set-time"}'
-      lineinfile:
-        path: /etc/default/libvirt-guests
-        regexp: '^#SYNC_TIME=1$'
-        line: 'SYNC_TIME=1'
-      tags: kvm
-
-    - name: Install shell utilities - starship, direnv
-      become: true
-      snap:
-        name:
-          - starship
-          - direnv
-      tags: shell
-
-    - name: Install fish (Friendly Interactive SHell) and extra tools
-      become: true
-      apt:
-        name:
-          - fish
-          - fd-find
-          - bat  #https://github.com/sharkdp/bat
-      tags: shell
-
-    - name: Update fish completions
-      shell: fish -c fish_update_completions
-      tags: shell
-
-    - name: Fzf fo fish
-      git:
-        repo: "https://github.com/PatrickF1/fzf.fish"
-        dest: "~/localdev/fzf.fish"
-        update: no
-      tags: shell
-
-    - name: Configure fish
-      copy:
-        src: "config/fish/config.fish"
-        dest: "~/.config/fish/config.fish"
-        backup: yes
-      tags: shell
-
-    - name: Change user shell to fish
-      become: yes
-      user:
-        name: "{{ executing_user }}"
-        shell: /usr/bin/fish
-
-    - name: Configure starship prompt
-      copy:
-        src: "config/starship.toml"
-        dest: "~/.config/starship.toml"
-        backup: yes
-      tags: shell
-
-    - name: Configure fisher
-      shell:
-        cmd: 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher'
-        executable: /usr/bin/fish
-      tags: shell
-
-    - name: Configure Ruby env
-      shell:
-        cmd: 'asdf plugin-add ruby'
-        executable: /usr/bin/fish
-      register: asdf_ruby
-      changed_when: "'already added' not in asdf_ruby.stderr"
-      failed_when: "asdf_ruby.rc not in [0,2]"
-      tags: shell
-
-    - name: Configure Node env
-      shell:
-        cmd: 'asdf plugin-add nodejs'
-        executable: /usr/bin/fish
-      register: asdf_node
-      changed_when: "'already added' not in asdf_node.stderr"
-      failed_when: "asdf_node.rc not in [0,2]"
-      tags: shell
-
-    - name: Configure asdf rc file
-      copy:
-        src: "home/.asdfrc"
-        dest: "~/"
-      tags: shell
-
-    - name: Default tool versions for asdf
-      copy:
-        src: ".tool-versions"
-        dest: "~/"
-      tags: shell
-
-    - name: Configure RedShift
-      copy:
-        src: "config/redshift.conf"
-        dest: "~/.config/redshift.conf"
-        backup: yes
-      tags: xfce
-
-
-    - name: setup nbd kernel module
-      become: true
-      modprobe:
-        name: nbd
-        params: 'nbds_max=1'
-      tags: net

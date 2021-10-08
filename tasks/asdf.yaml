@@ -1,0 +1,34 @@
+---
+
+- name: Install ASDF - meta env version manager, node and ruby
+  git:
+    clone: true
+    repo: 'https://github.com/asdf-vm/asdf.git'
+    dest: ~/.asdf
+
+- name: Configure asdf rc file
+  copy:
+    src: "home/.asdfrc"
+    dest: "~/"
+  tags: shell
+
+- name: Default tool versions for asdf
+  copy:
+    src: ".tool-versions"
+    dest: "~/"
+
+- name: Configure Ruby env
+  shell:
+    cmd: 'asdf plugin-add ruby'
+    executable: /usr/bin/fish
+  register: asdf_ruby
+  changed_when: "'already added' not in asdf_ruby.stderr"
+  failed_when: "asdf_ruby.rc not in [0,2]"
+
+- name: Configure Node env
+  shell:
+    cmd: 'asdf plugin-add nodejs'
+    executable: /usr/bin/fish
+  register: asdf_node
+  changed_when: "'already added' not in asdf_node.stderr"
+  failed_when: "asdf_node.rc not in [0,2]"

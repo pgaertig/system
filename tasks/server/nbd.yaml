@@ -1,0 +1,16 @@
+---
+
+- name: setup nbd kernel module
+  become: true
+  modprobe:
+    name: nbd
+    params: 'nbds_max=1'
+  tags: net
+
+- name: Install base ops packages
+  become: yes
+  apt:
+    state: latest
+    update_cache: yes
+    name:
+      - nbd-client

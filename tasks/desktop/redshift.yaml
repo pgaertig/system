@@ -1,0 +1,15 @@
+---
+
+- name: Install redshift (GTK)
+  become: yes
+  apt:
+    state: latest
+    name:
+      - redshift-gtk
+
+- name: Configure RedShift
+  copy:
+    src: "config/redshift.conf"
+    dest: "~/.config/redshift.conf"
+    backup: yes
+  tags: xfce

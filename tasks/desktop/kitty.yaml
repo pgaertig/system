@@ -1,0 +1,23 @@
+---
+
+- name: Install kitty
+  shell: |
+    curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin launch=n
+    ln -s ~/.local/kitty.app/bin/kitty ~/.local/bin/
+    cp ~/.local/kitty.app/share/applications/kitty.desktop ~/.local/share/applications
+    sed -i "s|Icon=kitty|Icon=/home/$USER/.local/kitty.app/share/icons/hicolor/256x256/apps/kitty.png|g" ~/.local/share/applications/kitty.desktop
+
+- name: Configure kitty
+  copy:
+    src: "config/kitty/kitty.conf"
+    dest: "~/.config/kitty/kitty.conf"
+    backup: yes
+
+# not supported by kitty, only xterm
+- name: Enable Sixel mode in Terminals
+  become: true
+  copy:
+    dest: /etc/X11/Xresources/sixel
+    content: |
+      ! Allow sixel graphics. (Try: "convert -colors 16 foo.jpg sixel:-").
+      xterm*decTerminalID	:	vt340

@@ -1,0 +1,35 @@
+---
+
+- name: Install fish (Friendly Interactive SHell) and extra tools
+  become: true
+  apt:
+    name:
+      - fish
+      - fd-find
+      - bat  #https://github.com/sharkdp/bat
+
+- name: Update fish completions
+  shell: fish -c fish_update_completions
+
+- name: Fzf fo fish
+  git:
+    repo: "https://github.com/PatrickF1/fzf.fish"
+    dest: "~/localdev/fzf.fish"
+    update: no
+
+- name: Configure fish
+  copy:
+    src: "config/fish/config.fish"
+    dest: "~/.config/fish/config.fish"
+    backup: yes
+
+- name: Change user shell to fish
+  become: yes
+  user:
+    name: "{{ executing_user }}"
+    shell: /usr/bin/fish
+
+- name: Configure fisher
+  shell:
+    cmd: 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher'
+    executable: /usr/bin/fish

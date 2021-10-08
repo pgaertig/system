@@ -1,0 +1,16 @@
+---
+
+- name: DDC - apps
+  become: yes
+  apt:
+    state: latest
+    name:
+      - ddcutil
+      - gddccontrol
+
+- name: DDC - dd user to i2c group for rootless
+  become: yes
+  user:
+    name: "{{ executing_user }}"
+    groups: i2c
+    append: yes

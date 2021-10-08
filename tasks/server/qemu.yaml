@@ -1,0 +1,10 @@
+---
+
+- name: KVM - sync clocks of guests on resume
+  # Check with:
+  # virsh qemu-agent-command ubuntu20.04 '{"execute":"guest-set-time"}'
+  lineinfile:
+    path: /etc/default/libvirt-guests
+    regexp: '^#SYNC_TIME=1$'
+    line: 'SYNC_TIME=1'
+

@@ -1,0 +1,16 @@
+---
+
+- name: Install shell utilities - starship, direnv
+  become: true
+  snap:
+    name:
+      - starship
+      - direnv
+  tags: shell
+
+- name: Configure starship prompt
+  copy:
+    src: "config/starship.toml"
+    dest: "~/.config/starship.toml"
+    backup: yes
+  tags: shell

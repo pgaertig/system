@@ -1,0 +1,7 @@
+---
+
+- name: Bash set terminal window title
+  blockinfile:
+    path: ~/.bashrc
+    block: |
+      trap 'echo -ne "\e]0;$BASH_COMMAND\007"' DEBUG

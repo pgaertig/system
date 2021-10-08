@@ -1,0 +1,14 @@
+---
+- name: install/update packages
+  become: yes
+  apt:
+    state: latest
+    update_cache: yes
+    name:
+      - xfce4-goodies
+      - papirus-icon-theme
+      - arc-theme
+
+- name: Disable client side decorations in dialogs
+  shell: xfconf-query -c xsettings -p /Gtk/DialogsUseHeader -s false
+  tags: xfce
