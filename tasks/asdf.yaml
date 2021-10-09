@@ -17,18 +17,21 @@
     src: ".tool-versions"
     dest: "~/"
 
-- name: Configure Ruby env
+- name: Add plugins
   shell:
-    cmd: 'asdf plugin-add ruby'
+    cmd: |
+      set PRE_CHECK (asdf plugin list)
+      cut -d' ' -f1 ~/.tool-versions|xargs -i asdf -v plugin add  {}
+      set POST_CHECK (asdf plugin list)
+      if test "$PRE_CHECK" != "$POST_CHECK" ; echo "ansible changed!" ; end
     executable: /usr/bin/fish
-  register: asdf_ruby
-  changed_when: "'already added' not in asdf_ruby.stderr"
-  failed_when: "asdf_ruby.rc not in [0,2]"
+  register: asdf_install_result
+  changed_when: "'ansible changed!' in asdf_install_result.stderr"
+  failed_when: "'not found' in asdf_install_result.stdout"
 
-- name: Configure Node env
+- name: ASDF install
   shell:
-    cmd: 'asdf plugin-add nodejs'
+    cmd: 'asdf install'
     executable: /usr/bin/fish
-  register: asdf_node
-  changed_when: "'already added' not in asdf_node.stderr"
-  failed_when: "asdf_node.rc not in [0,2]"
+  register: asdf_install
+  changed_when: "'Installing' in asdf_install.stdout"

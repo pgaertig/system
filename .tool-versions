@@ -3,4 +3,4 @@ nodejs 14.16.1
 yarn 1.22.10
 rust stable
 crystal 1.1.1
-python 3.9.5
+python 3.10.0

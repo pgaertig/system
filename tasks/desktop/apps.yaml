@@ -9,7 +9,6 @@
       - tlp
       - smartmontools
       - sqlitebrowser
-      - inkscape
       - remmina
       - network-manager-openvpn-gnome
       - birdtray
@@ -34,6 +33,7 @@
       - firefox
       - chromium
       - darktable
+      - inkscape
       - restic
       - signal-desktop
       - spotify

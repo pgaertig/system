@@ -6,10 +6,30 @@
     name:
       - fish
       - fd-find
+      - libbz2-dev
       - bat  #https://github.com/sharkdp/bat
 
+- name: Change user shell to fish
+  become: yes
+  user:
+    name: "{{ executing_user }}"
+    shell: /usr/bin/fish
+
+- name: Check current completions checksum
+  shell: "tar c -P --mtime='UTC 2019-01-01' ~/.local/share/fish/generated_completions | md5sum"
+  register: prev_completions_checksum
+  changed_when: False
+
 - name: Update fish completions
-  shell: fish -c fish_update_completions
+  shell:
+    cmd: |
+      set PRE_CHECKSUM (tar c -P --mtime='UTC 2019-01-01' ~/.local/share/fish/generated_completions | md5sum)
+      fish -c fish_update_completions
+      set POST_CHECKSUM (tar c -P --mtime='UTC 2019-01-01' ~/.local/share/fish/generated_completions | md5sum)
+      if test "$PRE_CHECKSUM" != "$POST_CHECKSUM" ; echo "ansible changed!" ; end
+    executable: /usr/bin/fish
+  register: fish_update_completions
+  changed_when: "'ansible changed!' in fish_update_completions.stdout"
 
 - name: Fzf fo fish
   git:
@@ -23,13 +43,15 @@
     dest: "~/.config/fish/config.fish"
     backup: yes
 
-- name: Change user shell to fish
-  become: yes
-  user:
-    name: "{{ executing_user }}"
-    shell: /usr/bin/fish
+- stat: path=
 
 - name: Configure fisher
   shell:
-    cmd: 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher'
+    cmd: |
+      set PRE_CHECK (md5sum ~/.config/fish/functions/fisher.fish)
+      curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher
+      set POST_CHECK (md5sum ~/.config/fish/functions/fisher.fish)
+      if test "$PRE_CHECK" != "$POST_CHECK" ; echo "ansible changed!" ; end
     executable: /usr/bin/fish
+  register: fisher
+  changed_when: "'ansible changed!' in fisher.stdout"

@@ -13,18 +13,20 @@
       become: yes
       apt:
         update_cache: yes
+        cache_valid_time: 86400 #24h
+      tags: apps, shell, dev, xfce
 
     # Common
+    - import_tasks: tasks/cmdline-tools.yaml
+      tags: shell, apps
     - import_tasks: tasks/fish.yaml
       tags: fish, shell
     - import_tasks: tasks/starship.yaml
       tags: shell
-    - import_tasks: tasks/cmdline-tools.yaml
-      tags: shell, apps
     - import_tasks: tasks/bash.yaml
       tags: shell
     - import_tasks: tasks/asdf.yaml
-      tags: dev
+      tags: dev, shell, asdf
 
     # Desktop stuff
     - import_tasks: tasks/desktop/apps.yaml

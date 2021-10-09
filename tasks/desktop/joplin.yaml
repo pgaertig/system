@@ -2,6 +2,7 @@
 
 - name: Install Joplin App
   shell: "wget -O - https://raw.githubusercontent.com/laurent22/joplin/dev/Joplin_install_and_update.sh | bash"
-  warn: false
-  register: jomplin_result
-  changed_when: "'You already have the latest version' not in jomplin_result.stdout"
+  args:
+    warn: false # ignore `get_url` proposal
+  register: joplin_result
+  changed_when: "'You already have the latest version' not in joplin_result.stdout"

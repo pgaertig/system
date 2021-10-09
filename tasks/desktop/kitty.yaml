@@ -1,11 +1,18 @@
 ---
 
 - name: Install kitty
-  shell: |
-    curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin launch=n
-    ln -s ~/.local/kitty.app/bin/kitty ~/.local/bin/
-    cp ~/.local/kitty.app/share/applications/kitty.desktop ~/.local/share/applications
-    sed -i "s|Icon=kitty|Icon=/home/$USER/.local/kitty.app/share/icons/hicolor/256x256/apps/kitty.png|g" ~/.local/share/applications/kitty.desktop
+  shell:
+    cmd: |
+      set PRE_CHECK (kitty --version || echo none)
+      curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin launch=n
+      ln -s ~/.local/kitty.app/bin/kitty ~/.local/bin/
+      cp ~/.local/kitty.app/share/applications/kitty.desktop ~/.local/share/applications
+      sed -i "s|Icon=kitty|Icon=/home/$USER/.local/kitty.app/share/icons/hicolor/256x256/apps/kitty.png|g" ~/.local/share/applications/kitty.desktop
+      set POST_CHECK (kitty --version)
+      if test "$PRE_CHECK" != "$POST_CHECK" ; echo "ansible changed!" ; end
+    executable: /usr/bin/fish
+  register: kitty
+  changed_when: "'ansible changed!' in kitty.stdout"
 
 - name: Configure kitty
   copy:
