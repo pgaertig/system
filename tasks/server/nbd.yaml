@@ -11,6 +11,5 @@
   become: yes
   apt:
     state: latest
-    update_cache: yes
     name:
       - nbd-client

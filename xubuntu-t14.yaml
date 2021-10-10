@@ -48,7 +48,10 @@
     - import_tasks: tasks/server/qemu.yaml
       tags: qemu
 
-    # Other
+    - import_tasks: tasks/server/docker.yaml
+      tags: docker
+
+    # Other this machine specific
     - name: optimize network usage
       become: true
       blockinfile:
@@ -86,25 +89,3 @@
       #Option  "TripleBuffer" "true"
     #          BusID       "PCI:0:2:0"
     #        EndSection
-
-    #Docker
-    #  - name: Make docker group for unpriviledged users
-    #    tags: docker
-    #    group: name=docker
-
-    #  - name: install/update packages
-    #    tags: docker
-    #    apt: name={{item}} state=latest update_cache=yes
-    #    with_items:
-    #      - docker.io
-
-    #  - name: Adding user to docker group
-    #    tags: docker
-    #    user:
-    #      name: {{ executing_user }}
-    #      groups: docker
-    #      append: yes
-
-    #  - name: Run docker service
-    #    tags: docker
-    #    service: name="docker" state="started"

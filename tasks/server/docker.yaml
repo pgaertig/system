@@ -1,0 +1,25 @@
+---
+
+- name: Make docker group for unpriviledged users
+  become: true
+  group: name=docker
+
+- name: Install docker.io package
+  become: true
+  apt:
+    state: latest
+    name:
+      - docker.io
+
+- name: Add user to docker group
+  become: true
+  user:
+    name: "{{ executing_user }}"
+    groups: docker
+    append: yes
+
+- name: Start docker service
+  become: true
+  service:
+    name: docker
+    state: started
