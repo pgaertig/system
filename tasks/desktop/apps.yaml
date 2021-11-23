@@ -30,7 +30,6 @@
   become: true
   snap:
     name:
-      - firefox
       - chromium
       - darktable
       - inkscape
