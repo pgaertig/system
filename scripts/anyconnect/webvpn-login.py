@@ -1,5 +1,5 @@
 #!/bin/env python3
-import os
+import os, time, base64, hmac
 import shutil
 import asyncio
 import keyring
@@ -68,16 +68,32 @@ async def main():
             if keyring_password:
                 keyring.delete_password(the_script, args.user)
         else:
-            await page.waitForSelector('#oath')
+            await page.waitForSelector('#otp')
             # Once logged in remember the password
             keyring.set_password(the_script, args.user, password)
             break
 
+    def get_hotp_token(secret, intervals_no):
+        key = base64.b32decode(secret, True)
+        msg = intervals_no.to_bytes(8, "big")
+        digest = hmac.new(key, msg, "sha1").digest()
+        offset = digest[19] & 0xF
+        code = digest[offset : offset + 4]
+        code = int.from_bytes(code, "big") & 0x7FFFFFFF
+        code = code % 1000000
+        return '{:06}'.format(code)
+
+    def get_totp_token(secret):
+        return get_hotp_token(secret, intervals_no=int(time.time())//30)
 
     while True:
-        auth_code = input('Enter the received auth code: ')
-        await page.evaluate('''() => {document.querySelector('#oath').value="";}''');
-        await page.type(selector='#oath', text=auth_code)
+        # auth_code = input('Enter the received auth code: ')
+        keyring_password = keyring.get_password(the_script, args.user + ",totp")
+        totps = keyring_password or getpass.getpass('Get totp secret:')
+        auth_code = get_totp_token(totps)
+        print(f"Using auth code: {auth_code}")
+        await page.evaluate('''() => {document.querySelector('#otp').value="";}''');
+        await page.type(selector='#otp', text=auth_code)
         await asyncio.wait([
             asyncio.create_task(page.click('#kc-login')),
             asyncio.create_task(page.waitForNavigation(waitUntil='networkidle0'))])
@@ -87,6 +103,7 @@ async def main():
         if errorInfo['type']:
             print(f"{errorInfo['type']} - {errorInfo['content']}")
         else:
+            keyring.set_password(the_script, args.user + ",totp", totps)
             break
 
     webvpn_cookie = [c['value'] for c in await page.cookies() if c["name"] == 'webvpn']
