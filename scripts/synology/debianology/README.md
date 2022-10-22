@@ -3,7 +3,7 @@ Recipe for Debian on Synology DSM as the secondary OS to work with NAS.
 
 ## Installation
 Make sure that your Synology has Docker package installed.
-Just copy over the files to Synology and run below from DSM as an user with Docker access. 
+Just copy over the files to Synology and run the bellow from DSM as a user with Docker access. 
    
     bash ./debianology.sh
 
@@ -25,7 +25,7 @@ The Debian users have same access rights as the DSM users.
 
 DSM shell defaults to `sh`, which gets inherited by Debian container.
 Usually Linux shell could be changed in `/etc/passwd` but DSM prohibits it.
-As workaround to switch the default user shell to e.g. `bash` invoke below in your Debian user directory:
+As workaround to switch the default user shell to e.g. `bash` invoke the bellow in your Debian user directory:
 
     echo "/bin/bash\nexit" > .profile
 
