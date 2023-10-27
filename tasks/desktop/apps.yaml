@@ -5,48 +5,55 @@
   apt:
     state: latest
     name:
-      - libreoffice
-      - tlp
       - smartmontools
       - sqlitebrowser
       - remmina
       - network-manager-openvpn-gnome
       - birdtray
+      - dcraw
+      - virt-manager
+      - gnome-disk-utility
+      - ttf-mscorefonts-installer
+      - gnome-calculator
+      - gnome-calendar
+      - gnome-firmware
+      - gnome-genius
+      - arandr
+      - meld  # Diff app
+      - gvfs-backends # Allow Windows network browsing
+      - timeshift # OS state snapshoting
+      - gvfs-fuse # all Thunar/Gio mounts under /run/user/1000/gvfs
+      - cifs-utils # required for Veeam Backup
 
 - name: remove packages
   become: yes
   apt:
     state: absent
     name:
-      - mono-complete
       - docker.io
       - xnbd-client
-      - uvcdynctrl # https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1626731
-      - virtualbox
-      - virtualbox-dkms
-      - strawberry
 
 - name: Install edge snap apps
   become: true
   snap:
     name:
+      - libreoffice
       - chromium
       - darktable
       - inkscape
-      - restic
       - signal-desktop
       - spotify
       - skype
       - telegram-desktop
       - xournalpp
-      - drawio
-    channel: latest/edge
+    #channel: latest/edge
 
 - name: Install edge snap apps with classic confinement
   become: true
   snap:
     name:
       - slack
+      - restic
     channel: latest/edge
     classic: true
 

@@ -1,8 +1,0 @@
----
-
-- name: Install fonts
-  become: yes
-  apt:
-    state: latest
-    name:
-      - ttf-mscorefonts-installer
