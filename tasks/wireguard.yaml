@@ -1,0 +1,22 @@
+---
+
+- name: Install wireguard
+  become: true
+  apt:
+    name:
+      - wireguard-tools
+
+- name: Allow DNS split horizon with wg-quick expects it
+  become: true
+  file:
+    src: "/usr/bin/resolvectl"
+    dest: "/usr/local/bin/resolvconf"
+    state: link
+
+# https://ubuntu.com/server/docs/wireguard-vpn-other-tasks
+- name: Enable wg0 with systemd
+  become: true
+  systemd:
+    name: wg-quick@wg0
+    enabled: true
+    state: started

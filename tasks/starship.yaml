@@ -6,6 +6,7 @@
     name:
       - starship
       - direnv
+    channel: edge
   tags: shell
 
 - name: Configure starship prompt

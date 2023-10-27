@@ -15,4 +15,13 @@
       - hashdeep
       - neofetch
       - openvpn
+      - build-essential
+      - zlib1g-dev
+      - libffi-dev
+      - libssl-dev
+      - mc
+      - htop
+      - inotify-tools
+      - pv
+      - pbzip2
 

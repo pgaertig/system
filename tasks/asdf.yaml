@@ -21,7 +21,7 @@
   shell:
     cmd: |
       set PRE_CHECK (asdf plugin list)
-      cut -d' ' -f1 ~/.tool-versions|xargs -i asdf -v plugin add  {}
+      cut -d' ' -f1 ~/.tool-versions |xargs -i asdf -v plugin add  {}
       set POST_CHECK (asdf plugin list)
       if test "$PRE_CHECK" != "$POST_CHECK" ; echo "ansible changed!" ; end
     executable: /usr/bin/fish
@@ -31,7 +31,7 @@
 
 - name: ASDF install
   shell:
+    chdir: "~"
     cmd: 'asdf install'
-    executable: /usr/bin/fish
   register: asdf_install
   changed_when: "'Installing' in asdf_install.stdout"
