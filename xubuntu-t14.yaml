@@ -3,7 +3,7 @@
 # ansible-galaxy collection install community.general
 # ansible-galaxy collection install community.docker
 
-#Xubuntu 21.04
+#Xubuntu 22.04
 - name: xubuntu t14 local playbook
   hosts: localhost
   connection: local
@@ -30,6 +30,8 @@
       tags: shell
     - import_tasks: tasks/asdf.yaml
       tags: dev, shell, asdf
+    - import_tasks: tasks/wireguard.yaml
+      tags: wg
 
     # Desktop stuff
     - import_tasks: tasks/desktop/apps.yaml
@@ -40,12 +42,8 @@
       tags: xfce, desktop, apps
     - import_tasks: tasks/desktop/xfce.yaml
       tags: xfce
-    - import_tasks: tasks/desktop/joplin.yaml
-      tags: apps, joplin
     - import_tasks: tasks/desktop/kitty.yaml
       tags: term, kitty
-    - import_tasks: tasks/desktop/fonts.yaml
-      tags: xfce, desktop
 
     # Server stuff
     - import_tasks: tasks/server/qemu.yaml
