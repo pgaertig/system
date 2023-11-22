@@ -14,6 +14,7 @@
       - virt-manager
       - gnome-disk-utility
       - ttf-mscorefonts-installer
+      - fonts-powerline
       - gnome-calculator
       - gnome-calendar
       - gnome-firmware

@@ -32,6 +32,8 @@
       tags: dev, shell, asdf
     - import_tasks: tasks/wireguard.yaml
       tags: wg
+    - import_tasks: tasks/syncthing.yaml
+      tags: syncthing
 
     # Desktop stuff
     - import_tasks: tasks/desktop/apps.yaml
@@ -44,6 +46,8 @@
       tags: xfce
     - import_tasks: tasks/desktop/kitty.yaml
       tags: term, kitty
+    - import_tasks: tasks/desktop/dymo-pnp.yaml
+      tags: print
 
     # Server stuff
     - import_tasks: tasks/server/qemu.yaml
@@ -90,3 +94,8 @@
       #Option  "TripleBuffer" "true"
     #          BusID       "PCI:0:2:0"
     #        EndSection
+
+  handlers:
+    - name: Reload udev rules
+      become: true
+      command: udevadm control --reload-rules

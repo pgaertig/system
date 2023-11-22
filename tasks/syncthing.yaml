@@ -1,0 +1,15 @@
+---
+
+- name: Install syncthing
+  become: true
+  apt:
+    name:
+      - syncthing
+
+#  https://docs.syncthing.net/users/autostart.html#linux
+- name: Enable syncthing with systemd
+  systemd:
+    name: syncthing.service
+    enabled: true
+    state: started
+    user: true

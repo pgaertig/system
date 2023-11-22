@@ -1,0 +1,17 @@
+---
+
+- name: allow USB access to dymo printer
+  become: true
+  blockinfile:
+    path: /etc/udev/rules.d/91-dymo-1002.rules
+    create: yes
+    block: |
+      ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="0922", ATTRS{idProduct}=="1002", MODE="0666"
+  notify: Reload udev rules
+  tags: print
+
+- name: Install dymoprint python package
+  pip:
+    name: dymoprint
+
+# https://github.com/computerlyrik/dymoprint
