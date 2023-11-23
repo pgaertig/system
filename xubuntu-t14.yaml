@@ -57,6 +57,14 @@
       tags: docker
 
     # Other this machine specific
+    - name: Disable NetworkManager await for a connection at boot
+      # sudo systemd-analyze critical-chain to see more services delaying the boot-up
+      become: true
+      systemd:
+        name: NetworkManager-wait-online.service
+        enabled: false
+      tags: net
+
     - name: optimize network usage
       become: true
       blockinfile:
