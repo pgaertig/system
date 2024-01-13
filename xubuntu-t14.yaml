@@ -80,6 +80,12 @@
           GenericSegmentationOffload=false
       tags: net
 
+    # 23.10 https://askubuntu.com/questions/1489925/bluetooth-wont-connect-after-upgrade-to-23-10
+    - name: Fix bluetooth audio
+      apt:
+        name:
+          - libspa-0.2-bluetooth
+
         #  - name: setup nbd kernel module
         #    modprobe:
         #      name: nbd
