@@ -48,6 +48,8 @@
       tags: term, kitty
     - import_tasks: tasks/desktop/dymo-pnp.yaml
       tags: print
+    - import_tasks: tasks/desktop/wacom.yaml
+      tags: wacom
 
     # Server stuff
     - import_tasks: tasks/server/qemu.yaml

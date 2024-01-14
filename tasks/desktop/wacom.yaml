@@ -1,0 +1,38 @@
+---
+
+- name: Install gromit-mpx
+  become: yes
+  apt:
+    state: latest
+    name:
+      - gromit-mpx
+
+- name: Configure Gromit MPX
+  copy:
+    src: "config/gromit-mpx.cfg"
+    dest: "~/.config/"
+    backup: yes
+
+- name: Copy wacom-init script
+  become: yes
+  copy:
+    src: "scripts/wacom-init.sh"
+    dest: "/usr/local/bin/"
+    mode: "a+x"
+
+- name: Create udev rule for Wacom tablet to setup keys
+  become: true
+  copy:
+    dest: /etc/udev/rules.d/99-wacom.rules
+    content: |
+      ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="056a", ATTRS{idProduct}=="0376", RUN+="/usr/bin/env USER={{executing_user}} /usr/local/bin/wacom-init.sh"
+  notify: Reload udev rules
+
+- name: Get list of current shortcuts
+  command: "xfconf-query -c xfce4-keyboard-shortcuts -p /commands/custom -l"
+  register: current_shortcuts
+  changed_when: false
+
+- name: Add 'Cancel' (Fn+F11, Wacom tablet 1st key) shortcut for gromit-mpx
+  command: "xfconf-query -c xfce4-keyboard-shortcuts -p /commands/custom/Cancel -n -t string -s 'gromit-mpx'"
+  when: "'Cancel' not in current_shortcuts.stdout"
