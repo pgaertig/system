@@ -1,0 +1,42 @@
+---
+# Installation of OBS Studio with VAAPI support
+
+- name: Install OBS Studio
+  apt:
+    name: obs-studio
+    state: present
+
+# Check if VAAPI is supported:
+# $ sudo apt install gstreamer1.0-tools vainfo
+# $ gst-inspect-1.0 va
+# $ vainfo
+
+- name: Check if OBS VAAPI plugin is installed
+  stat:
+    path: ~/.config/obs-studio/plugins/obs-vaapi
+  register: obs_vaapi_plugin
+
+- name: Clone obs-vaapi to localdev
+  git:
+    repo: https://github.com/fzwoch/obs-vaapi
+    dest: ~/localdev/obs-vaapi
+  when: obs_vaapi_plugin.stat.exists == False
+
+- name: Install build dependencies
+  apt:
+    name:
+      - libobs-dev
+      - libgstreamer1.0-dev
+      - libgstreamer-plugins-base1.0-dev
+      - libpci-dev
+      - meson
+    state: present
+  when: obs_vaapi_plugin.stat.exists == False
+
+- name: Build obs-vaapi
+  command: meson setup --buildtype=release build && meson install -C build
+  args:
+    chdir: ~/localdev/obs-vaapi
+  when: obs_vaapi_plugin.stat.exists == False
+
+
