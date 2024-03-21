@@ -1,0 +1,44 @@
+# Zoom installation/upgrade
+
+---
+- name: Check checksum of old zoom_amd64.deb
+  stat:
+    path: ~/Downloads/zoom_amd64.deb
+    get_checksum: yes
+  register: old_zoom_checksum
+
+- name: Download the latest version of Zoom
+  get_url:
+    url: https://zoom.us/client/latest/zoom_amd64.deb
+    dest: ~/Downloads/zoom_amd64.deb
+
+- name: Check checksum of the downloaded file
+  stat:
+    path: ~/Downloads/zoom_amd64.deb
+    get_checksum: yes
+  register: new_zoom_checksum
+
+- name: Set checksum condition
+  set_fact:
+    should_install: "{{ old_zoom_checksum.stat.checksum | default('') != new_zoom_checksum.stat.checksum }}"
+
+- name: Install Zoom
+  become: true
+  apt:
+    deb: "/home/{{executing_user}}/Downloads/zoom_amd64.deb"
+  when: should_install
+
+- name: Copy Zoom.desktop to local applications
+  copy:
+    src: /usr/share/applications/Zoom.desktop
+    dest: ~/.local/share/applications/Zoom.desktop
+  when: should_install
+
+- name: Change Zoom to run with QT_SCALE_FACTOR=0.5
+  replace:
+    path: ~/.local/share/applications/Zoom.desktop
+    regexp: 'Exec=/usr/bin/zoom'
+    replace: 'Exec=/usr/bin/env QT_SCALE_FACTOR=0.5 /usr/bin/zoom'
+
+
+

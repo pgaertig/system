@@ -52,6 +52,8 @@
       tags: wacom
     - import_tasks: tasks/desktop/obs.yaml
       tags: obs, desktop, apps
+    - import_tasks: tasks/desktop/zoom.yaml
+      tags: zoom, desktop, apps
 
     # Server stuff
     - import_tasks: tasks/server/qemu.yaml
