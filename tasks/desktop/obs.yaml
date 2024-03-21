@@ -39,4 +39,9 @@
     chdir: ~/localdev/obs-vaapi
   when: obs_vaapi_plugin.stat.exists == False
 
-
+- name: Change DPI scaling for OBS Studio
+  become: yes
+  replace:
+    path: /usr/share/applications/com.obsproject.Studio.desktop
+    regexp: 'Exec=obs'
+    replace: 'Exec=env QT_SCALE_FACTOR=0.5 obs'

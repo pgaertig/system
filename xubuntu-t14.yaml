@@ -50,6 +50,8 @@
       tags: print
     - import_tasks: tasks/desktop/wacom.yaml
       tags: wacom
+    - import_tasks: tasks/desktop/obs.yaml
+      tags: obs, desktop, apps
 
     # Server stuff
     - import_tasks: tasks/server/qemu.yaml
