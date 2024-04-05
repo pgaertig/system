@@ -1,15 +1,32 @@
 ---
 
+- name: Add the Syncthing repository's GPG key
+  become: true
+  apt_key:
+    url: https://syncthing.net/release-key.txt
+    state: present
+
+- name: Add the Syncthing repository to your sources list
+  become: true
+  apt_repository:
+    repo: "deb http://apt.syncthing.net/ syncthing stable"
+    state: present
+
+- name: Update your package lists
+  become: true
+  apt:
+    update_cache: yes
+
 - name: Install syncthing
   become: true
   apt:
-    name:
-      - syncthing
+    name: syncthing
+    state: latest
 
 #  https://docs.syncthing.net/users/autostart.html#linux
 - name: Enable syncthing with systemd
-  systemd:
+  systemd_service:
     name: syncthing.service
+    scope: "user"
     enabled: true
     state: started
-    user: true

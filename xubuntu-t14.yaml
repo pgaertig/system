@@ -119,3 +119,7 @@
     - name: Reload udev rules
       become: true
       command: udevadm control --reload-rules
+
+    - name: Reload AppArmor profiles
+      become: true
+      command: apparmor_parser -r /etc/apparmor.d/

@@ -15,3 +15,14 @@
     dest: "~/.config/starship.toml"
     backup: yes
   tags: shell
+
+- name: Add permissions to AppArmor profile
+  become: true
+  lineinfile:
+    path: /var/lib/snapd/apparmor/profiles/snap.starship.starship
+    insertbefore: '^}'
+    line: "{{ item }}"
+  loop:
+    - "/sys/fs/cgroup/{,**/}cpu.max r,"
+    - "/sys/devices/**/power_supply/*/* r,"
+  notify: Reload AppArmor profiles
