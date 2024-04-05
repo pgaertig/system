@@ -25,6 +25,7 @@
       - timeshift # OS state snapshoting
       - gvfs-fuse # all Thunar/Gio mounts under /run/user/1000/gvfs
       - cifs-utils # required for Veeam Backup
+      - menulibre # Desktop menu editor
 
 - name: remove packages
   become: yes

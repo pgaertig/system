@@ -1,0 +1,12 @@
+---
+- name: Install Discord
+  become: true
+  snap:
+    name: discord
+    state: present
+
+- name: Snap connect discord:system-observe :system-observe
+  command: snap connect discord:system-observe :system-observe
+
+- name: Snap connect discord:unity7 :unity7
+  command: snap connect discord:unity7 :unity7

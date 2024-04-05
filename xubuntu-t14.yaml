@@ -54,6 +54,8 @@
       tags: obs, desktop, apps
     - import_tasks: tasks/desktop/zoom.yaml
       tags: zoom, desktop, apps
+    - import_tasks: tasks/desktop/discord.yaml
+      tags: discord, desktop, apps
 
     # Server stuff
     - import_tasks: tasks/server/qemu.yaml
