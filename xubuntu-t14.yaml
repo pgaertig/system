@@ -56,6 +56,8 @@
       tags: zoom, desktop, apps
     - import_tasks: tasks/desktop/discord.yaml
       tags: discord, desktop, apps
+    - import_tasks: tasks/wireguard.yaml
+      tags: wireguard
 
     # Server stuff
     - import_tasks: tasks/server/qemu.yaml
@@ -125,3 +127,7 @@
     - name: Reload AppArmor profiles
       become: true
       command: apparmor_parser -r /etc/apparmor.d/
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
