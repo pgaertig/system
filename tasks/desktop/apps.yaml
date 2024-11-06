@@ -26,6 +26,8 @@
       - gvfs-fuse # all Thunar/Gio mounts under /run/user/1000/gvfs
       - cifs-utils # required for Veeam Backup
       - menulibre # Desktop menu editor
+      - indicator-cpufreq # CPU frequency scaling switcher
+      - libreoffice
 
 - name: remove packages
   become: yes
@@ -39,7 +41,6 @@
   become: true
   snap:
     name:
-      - libreoffice
       - chromium
       - darktable
       - inkscape
@@ -65,3 +66,12 @@
     state: absent
     name:
       - zoom-client # problems with links, used vendor's DEB
+
+# https://bugs.launchpad.net/ubuntu/+source/indicator-cpufreq/+bug/2063547
+- name: "Fix AttributeError in indicator-cpufreq by replacing 'format' with 'format_string'"
+  become: true
+  replace:
+      path: /usr/lib/python3/dist-packages/indicator_cpufreq/indicator.py
+      regexp: 'locale\.format\('
+      replace: 'locale.format_string('
+      backup: yes  # Creates a backup file before making changes

@@ -6,7 +6,9 @@
     state: present
 
 - name: Snap connect discord:system-observe :system-observe
+  become: true
   command: snap connect discord:system-observe :system-observe
 
 - name: Snap connect discord:unity7 :unity7
+  become: true
   command: snap connect discord:unity7 :unity7
