@@ -12,6 +12,12 @@
     repo: "deb http://apt.syncthing.net/ syncthing stable"
     state: present
 
+- name: Prioritize the Syncthing repository
+  become: true
+  copy:
+    content: "Package: *\nPin: origin apt.syncthing.net\nPin-Priority: 990\n"
+    dest: /etc/apt/preferences.d/syncthing.pref
+
 - name: Update your package lists
   become: true
   apt:
